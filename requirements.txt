@@ -8,3 +8,5 @@ pre-commit==3.2.2
 PyYAML==6.0
 virtualenv==20.21.0
 rouge==1.16.0
+moverscore==  1.0.3
+spacy==3.5.1
