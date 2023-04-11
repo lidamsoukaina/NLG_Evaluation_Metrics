@@ -22,7 +22,7 @@ This project aims to benchmark the correlation of existing metrics with human sc
 
 1. First, you need to clone the repository and `cd` into it :
 ```bash
-git clone
+git clone https://github.com/lidamsoukaina/NLG_Evaluation_Metrics.git
 cd NLG_EVALUATION_METRICS
 ```
 2. Then, you need to create a virtual environment and activate it :
