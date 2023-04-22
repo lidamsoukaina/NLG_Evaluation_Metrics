@@ -1,30 +1,63 @@
+
+from nlg_eval_via_simi_measures.bary_score import BaryScoreMetric
+from nlg_eval_via_simi_measures.depth_score import DepthScoreMetric
+from nlg_eval_via_simi_measures.infolm import InfoLM
+from nltk.translate.bleu_score import sentence_bleu
+from nltk.translate.meteor_score import meteor_score
+from bert_score import score as BERTScore
 from rouge import Rouge
 
-def rouge_1(pred, target):
-    pred = pred.split()
-    target = target.split()
-    pred = set(pred)
-    target = set(target)
-    common = pred.intersection(target)
-    return len(common) / len(target), len(common) / len(pred)
 
-def rouge_2(pred, target):
-    pred = pred.split()
-    target = target.split()
-    pred = set(zip(pred, pred[1:]))
-    target = set(zip(target, target[1:]))
-    print(pred)
-    print(target)
-    common = pred.intersection(target)
-    return len(common) / len(target), len(common) / len(pred)
-def rouge_L(pred, target):
-    # create Rouge object
+def BaryScore(reference, candidate):
+    metric = BaryScoreMetric()
+    metric.prepare_idfs(reference, candidate)
+    score = metric.evaluate_batch(reference, candidate)
+    return score
+
+def DepthScore(reference, candidate):
+    metric = DepthScoreMetric()
+    metric.prepare_idfs(reference, candidate)
+    score = metric.evaluate_batch(candidate,reference )["depth_score"][0]
+    return score
+
+def InfoLM(reference, candidate):
+    metric = InfoLM(reference, candidate)
+    metric.prepare_idfs(reference, candidate)
+    score = metric.evaluate_batch(reference, candidate)
+    return score
+
+# Try different n-grams
+def BLUE(reference, hypothesis):
+    for n in range(1, len(hypothesis.split())+1):
+        weights = tuple(1/n for i in range(n))
+        score = sentence_bleu([reference], hypothesis.split(), weights=weights)
+        # Stop iterating if blue score is greater than 0.01
+        if score > 0.01:
+            break
+    return score
+
+def METEOR(reference, candidate):
+    # tokenized reference and candidate
+    reference_tokens = [reference.split()]
+    story_tokens = candidate.split()
+    score = meteor_score(reference_tokens, story_tokens)
+    return score    
+
+def ROUGE(reference, candidate):
     rouge = Rouge()
-    # calculate ROUGE-L
-    scores = rouge.get_scores(pred, target, avg=True, ignore_empty=True)
-    return scores["rouge-l"]["r"], scores["rouge-l"]["p"]
+    score = rouge.get_scores(candidate, reference)
+    return score[0]['rouge-1']['r']
 
-def wer(ref, hyp ,debug=True):
+def Rouge_L(pred, target):
+    rouge = Rouge()
+    scores = rouge.get_scores(pred, target, avg=True, ignore_empty=True)
+    return scores[0]['rouge-l']['r']
+
+def BertScore(reference, candidate):
+    score = BERTScore(reference, candidate, lang='en', verbose=True)
+    return score
+
+def WER(ref, hyp ,debug=True):
     r = ref.split()
     h = hyp.split()
     #costs will holds the costs, like in the Levenshtein distance algorithm
